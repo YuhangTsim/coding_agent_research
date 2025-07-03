@@ -300,20 +300,20 @@ private async isItemTooBig(item: ContextItemWithId) {
 ## Implementation Locations
 
 ### Core Context Selection Files
-- **RepoMap Context Provider**: `core/context/providers/RepoMapContextProvider.ts` - Repository map file selection
-- **RepoMap Request**: `core/context/retrieval/repoMapRequest.ts` - AI-powered file selection logic
-- **Context Providers**: `core/promptFiles/index.ts` - Supported context provider definitions
-- **Context Selection**: `gui/src/components/mainInput/Lump/sections/SelectedSection.tsx` - Context selection UI
+- **RepoMap Context Provider**: [`core/context/providers/RepoMapContextProvider.ts`](continue/core/context/providers/RepoMapContextProvider.ts) - Repository map file selection
+- **RepoMap Request**: [`core/context/retrieval/repoMapRequest.ts`](continue/core/context/retrieval/repoMapRequest.ts) - AI-powered file selection logic
+- **Context Providers**: [`core/promptFiles/index.ts`](continue/core/promptFiles/index.ts) - Supported context provider definitions
+- **Context Selection**: [`gui/src/components/mainInput/Lump/sections/SelectedSection.tsx`](continue/gui/src/components/mainInput/Lump/sections/SelectedSection.tsx) - Context selection UI
 
 ### Context Management Files
-- **Session Slice**: `gui/src/redux/slices/sessionSlice.ts` - Conversation history and state management
-- **Token Counting**: `core/llm/countTokens.ts` - Context window management and truncation
-- **Message Construction**: `gui/src/redux/util/constructMessages.ts` - Message assembly and context integration
-- **Core Context**: `core/core.ts` - Context item validation and management
+- **Session Slice**: [`gui/src/redux/slices/sessionSlice.ts`](continue/gui/src/redux/slices/sessionSlice.ts) - Conversation history and state management
+- **Token Counting**: [`core/llm/countTokens.ts`](continue/core/llm/countTokens.ts) - Context window management and truncation
+- **Message Construction**: [`gui/src/redux/util/constructMessages.ts`](continue/gui/src/redux/util/constructMessages.ts) - Message assembly and context integration
+- **Core Context**: [`core/core.ts`](continue/core/core.ts) - Context item validation and management
 
 ### Key Methods and Functions
-- **RepoMap File Selection**: `repoMapRequest.ts:requestFilesFromRepoMap()` - AI-powered file selection
-- **Context Window Management**: `countTokens.ts:compileChatMessages()` - Context truncation logic
-- **Session Management**: `sessionSlice.ts:truncateHistoryToMessage()` - History truncation
-- **Context Validation**: `core.ts:isItemTooBig()` - Context item size validation
-- **Message Assembly**: `constructMessages.ts:constructMessages()` - Context integration 
+- **RepoMap File Selection**: [`repoMapRequest.ts:requestFilesFromRepoMap()`](continue/core/context/retrieval/repoMapRequest.ts) - AI-powered file selection
+- **Context Window Management**: [`countTokens.ts:compileChatMessages()`](continue/core/llm/countTokens.ts) - Context truncation logic
+- **Session Management**: [`sessionSlice.ts:truncateHistoryToMessage()`](continue/gui/src/redux/slices/sessionSlice.ts) - History truncation
+- **Context Validation**: [`core.ts:isItemTooBig()`](continue/core/core.ts) - Context item size validation
+- **Message Assembly**: [`constructMessages.ts:constructMessages()`](continue/gui/src/redux/util/constructMessages.ts) - Context integration 

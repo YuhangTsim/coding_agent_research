@@ -287,20 +287,20 @@ interface SessionMetrics {
 ## Implementation Locations
 
 ### Core Context Selection Files
-- **Memory Discovery**: `packages/core/src/utils/memoryDiscovery.ts` - Hierarchical context file loading
-- **File Discovery Service**: `packages/core/src/services/fileDiscoveryService.ts` - Git-aware file filtering
-- **Git Ignore Parser**: `packages/core/src/utils/gitIgnoreParser.ts` - Git ignore pattern parsing
-- **Memory Tool**: `packages/core/src/tools/memoryTool.ts` - Context file management
+- **Memory Discovery**: [`packages/core/src/utils/memoryDiscovery.ts`](gemini-cli/packages/core/src/utils/memoryDiscovery.ts) - Hierarchical context file loading
+- **File Discovery Service**: [`packages/core/src/services/fileDiscoveryService.ts`](gemini-cli/packages/core/src/services/fileDiscoveryService.ts) - Git-aware file filtering
+- **Git Ignore Parser**: [`packages/core/src/utils/gitIgnoreParser.ts`](gemini-cli/packages/core/src/utils/gitIgnoreParser.ts) - Git ignore pattern parsing
+- **Memory Tool**: [`packages/core/src/tools/memoryTool.ts`](gemini-cli/packages/core/src/tools/memoryTool.ts) - Context file management
 
 ### Context Management Files
-- **Config**: `packages/core/src/config/config.ts` - Configuration and context management
-- **CLI Config**: `packages/cli/src/config/config.ts` - CLI-specific configuration
-- **App**: `packages/cli/src/ui/App.tsx` - Memory refresh and context display
-- **Context Summary**: `packages/cli/src/ui/components/ContextSummaryDisplay.tsx` - Context UI
+- **Config**: [`packages/core/src/config/config.ts`](gemini-cli/packages/core/src/config/config.ts) - Configuration and context management
+- **CLI Config**: [`packages/cli/src/config/config.ts`](gemini-cli/packages/cli/src/config/config.ts) - CLI-specific configuration
+- **App**: [`packages/cli/src/ui/App.tsx`](gemini-cli/packages/cli/src/ui/App.tsx) - Memory refresh and context display
+- **Context Summary**: [`packages/cli/src/ui/components/ContextSummaryDisplay.tsx`](gemini-cli/packages/cli/src/ui/components/ContextSummaryDisplay.tsx) - Context UI
 
 ### Key Methods and Functions
-- **Hierarchical Memory**: `memoryDiscovery.ts:loadServerHierarchicalMemory()` - Main context loading logic
-- **File Filtering**: `fileDiscoveryService.ts:filterFiles()` - Git-aware file filtering
-- **Git Ignore**: `gitIgnoreParser.ts:isIgnored()` - Git ignore pattern matching
-- **Memory Refresh**: `App.tsx:performMemoryRefresh()` - Context refresh functionality
-- **Context Display**: `ContextSummaryDisplay.tsx` - Context file count display 
+- **Hierarchical Memory**: [`memoryDiscovery.ts:loadServerHierarchicalMemory()`](gemini-cli/packages/core/src/utils/memoryDiscovery.ts) - Main context loading logic
+- **File Filtering**: [`fileDiscoveryService.ts:filterFiles()`](gemini-cli/packages/core/src/services/fileDiscoveryService.ts) - Git-aware file filtering
+- **Git Ignore**: [`gitIgnoreParser.ts:isIgnored()`](gemini-cli/packages/core/src/utils/gitIgnoreParser.ts) - Git ignore pattern matching
+- **Memory Refresh**: [`App.tsx:performMemoryRefresh()`](gemini-cli/packages/cli/src/ui/App.tsx) - Context refresh functionality
+- **Context Display**: [`ContextSummaryDisplay.tsx`](gemini-cli/packages/cli/src/ui/components/ContextSummaryDisplay.tsx) - Context file count display 

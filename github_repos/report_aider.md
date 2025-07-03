@@ -187,19 +187,19 @@ Aider manages context at multiple levels:
 ## Implementation Locations
 
 ### Core Context Selection Files
-- **Repository Map System**: `aider/repomap.py` - Main implementation of graph-based context selection
-- **Context Coder**: `aider/coders/context_coder.py` - Specialized coder for context identification
-- **Base Coder**: `aider/coders/base_coder.py` - Core context management and file handling
-- **Commands**: `aider/commands.py` - Token management and context commands (`/tokens`, `/clear`)
+- **Repository Map System**: [`aider/repomap.py`](aider/repomap.py) - Main implementation of graph-based context selection
+- **Context Coder**: [`aider/coders/context_coder.py`](aider/coders/context_coder.py) - Specialized coder for context identification
+- **Base Coder**: [`aider/coders/base_coder.py`](aider/coders/base_coder.py) - Core context management and file handling
+- **Commands**: [`aider/commands.py`](aider/commands.py) - Token management and context commands (`/tokens`, `/clear`)
 
 ### Context Management Files
-- **History Management**: `aider/history.py` - Chat summarization and history management
-- **File Management**: `aider/file_manager.py` - File operations and read-only file handling
-- **Token Counting**: `aider/models/` - Token estimation and counting logic
+- **History Management**: [`aider/history.py`](aider/history.py) - Chat summarization and history management
+- **File Management**: [`aider/file_manager.py`](aider/file_manager.py) - File operations and read-only file handling
+- **Token Counting**: [`aider/models/`](aider/models/) - Token estimation and counting logic
 
 ### Key Methods and Functions
-- **Graph Ranking**: `aider/repomap.py:get_ranked_tags()` - PageRank algorithm implementation
-- **Repository Map**: `aider/repomap.py:get_repo_map()` - Main context selection method
-- **Token Management**: `aider/commands.py:cmd_tokens()` - Context window usage reporting
-- **File Mentions**: `aider/coders/base_coder.py:get_file_mentions()` - File mention detection
-- **Context History**: `aider/coders/base_coder.py:get_context_from_history()` - History extraction 
+- **Graph Ranking**: [`aider/repomap.py:get_ranked_tags()`](aider/repomap.py) - PageRank algorithm implementation
+- **Repository Map**: [`aider/repomap.py:get_repo_map()`](aider/repomap.py) - Main context selection method
+- **Token Management**: [`aider/commands.py:cmd_tokens()`](aider/commands.py) - Context window usage reporting
+- **File Mentions**: [`aider/coders/base_coder.py:get_file_mentions()`](aider/coders/base_coder.py) - File mention detection
+- **Context History**: [`aider/coders/base_coder.py:get_context_from_history()`](aider/coders/base_coder.py) - History extraction 

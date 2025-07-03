@@ -238,19 +238,19 @@ const userEditedAfter = fileEntry.user_edit_date && fileEntry.user_edit_date > m
 ## Implementation Locations
 
 ### Core Context Selection Files
-- **Context Manager**: `src/core/context/context-management/ContextManager.ts` - Main context management and truncation logic
-- **Context Window Utils**: `src/core/context/context-management/context-window-utils.ts` - Context window size calculations
-- **Task Management**: `src/core/task/index.ts` - Task state management and context restoration
-- **Tool Executor**: `src/core/task/ToolExecutor.ts` - Context condensing and tool execution
+- **Context Manager**: [`src/core/context/context-management/ContextManager.ts`](cline/src/core/context/context-management/ContextManager.ts) - Main context management and truncation logic
+- **Context Window Utils**: [`src/core/context/context-management/context-window-utils.ts`](cline/src/core/context/context-management/context-window-utils.ts) - Context window size calculations
+- **Task Management**: [`src/core/task/index.ts`](cline/src/core/task/index.ts) - Task state management and context restoration
+- **Tool Executor**: [`src/core/task/ToolExecutor.ts`](cline/src/core/task/ToolExecutor.ts) - Context condensing and tool execution
 
 ### Context Management Files
-- **Legacy Context Manager**: `src/core/context/context-management/ContextManager-legacy.ts` - Previous context management implementation
-- **Controller**: `src/core/controller/index.ts` - Task history and state management
-- **Context Mentions**: `webview-ui/src/utils/context-mentions.ts` - File and context mention handling
+- **Legacy Context Manager**: [`src/core/context/context-management/ContextManager-legacy.ts`](cline/src/core/context/context-management/ContextManager-legacy.ts) - Previous context management implementation
+- **Controller**: [`src/core/controller/index.ts`](cline/src/core/controller/index.ts) - Task history and state management
+- **Context Mentions**: [`webview-ui/src/utils/context-mentions.ts`](cline/webview-ui/src/utils/context-mentions.ts) - File and context mention handling
 
 ### Key Methods and Functions
-- **Context Management**: `ContextManager.ts:getNewContextMessagesAndMetadata()` - Main context processing method
-- **Truncation Logic**: `ContextManager.ts:getNextTruncationRange()` - Conversation truncation algorithm
-- **Context Optimization**: `ContextManager.ts:applyContextOptimizations()` - Duplicate removal and optimization
-- **Context Window Info**: `context-window-utils.ts:getContextWindowInfo()` - Model-specific context window calculations
-- **Task Restoration**: `Task.ts:restoreCheckpoint()` - Context restoration from checkpoints 
+- **Context Management**: [`ContextManager.ts:getNewContextMessagesAndMetadata()`](cline/src/core/context/context-management/ContextManager.ts) - Main context processing method
+- **Truncation Logic**: [`ContextManager.ts:getNextTruncationRange()`](cline/src/core/context/context-management/ContextManager.ts) - Conversation truncation algorithm
+- **Context Optimization**: [`ContextManager.ts:applyContextOptimizations()`](cline/src/core/context/context-management/ContextManager.ts) - Duplicate removal and optimization
+- **Context Window Info**: [`context-window-utils.ts:getContextWindowInfo()`](cline/src/core/context/context-management/context-window-utils.ts) - Model-specific context window calculations
+- **Task Restoration**: [`Task.ts:restoreCheckpoint()`](cline/src/core/task/index.ts) - Context restoration from checkpoints 

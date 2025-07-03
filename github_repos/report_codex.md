@@ -251,20 +251,20 @@ contextLeftPercent: number
 ## Implementation Locations
 
 ### Core Context Selection Files
-- **File Tag Utils**: `codex-cli/src/utils/file-tag-utils.ts` - File tag expansion and XML block handling
-- **Context Files**: `codex-cli/src/utils/singlepass/context_files.ts` - File discovery and caching
-- **Context Limit**: `codex-cli/src/utils/singlepass/context_limit.ts` - Context size management and visualization
-- **SinglePass App**: `codex-cli/src/components/singlepass-cli-app.tsx` - Full context mode implementation
+- **File Tag Utils**: [`codex-cli/src/utils/file-tag-utils.ts`](codex/codex-cli/src/utils/file-tag-utils.ts) - File tag expansion and XML block handling
+- **Context Files**: [`codex-cli/src/utils/singlepass/context_files.ts`](codex/codex-cli/src/utils/singlepass/context_files.ts) - File discovery and caching
+- **Context Limit**: [`codex-cli/src/utils/singlepass/context_limit.ts`](codex/codex-cli/src/utils/singlepass/context_limit.ts) - Context size management and visualization
+- **SinglePass App**: [`codex-cli/src/components/singlepass-cli-app.tsx`](codex/codex-cli/src/components/singlepass-cli-app.tsx) - Full context mode implementation
 
 ### Context Management Files
-- **Conversation History**: `codex-rs/core/src/conversation_history.rs` - Rust conversation history management
-- **Chat Widget**: `codex-rs/tui/src/chatwidget.rs` - TUI conversation management
-- **Conversation History Widget**: `codex-rs/tui/src/conversation_history_widget.rs` - History display and management
-- **Responses**: `codex-cli/src/utils/responses.ts` - Conversation history tracking
+- **Conversation History**: [`codex-rs/core/src/conversation_history.rs`](codex/codex-rs/core/src/conversation_history.rs) - Rust conversation history management
+- **Chat Widget**: [`codex-rs/tui/src/chatwidget.rs`](codex/codex-rs/tui/src/chatwidget.rs) - TUI conversation management
+- **Conversation History Widget**: [`codex-rs/tui/src/conversation_history_widget.rs`](codex/codex-rs/tui/src/conversation_history_widget.rs) - History display and management
+- **Responses**: [`codex-cli/src/utils/responses.ts`](codex/codex-cli/src/utils/responses.ts) - Conversation history tracking
 
 ### Key Methods and Functions
-- **File Tag Expansion**: `file-tag-utils.ts:expandFileTags()` - Main file tag expansion logic
-- **Context Files**: `context_files.ts:getFileContents()` - File discovery and loading
-- **Context Limit**: `context_limit.ts:printDirectorySizeBreakdown()` - Context usage visualization
-- **Conversation History**: `conversation_history.rs:record_items()` - History recording logic
-- **Token Usage**: `chat_composer.rs:set_token_usage()` - Context window tracking 
+- **File Tag Expansion**: [`file-tag-utils.ts:expandFileTags()`](codex/codex-cli/src/utils/file-tag-utils.ts) - Main file tag expansion logic
+- **Context Files**: [`context_files.ts:getFileContents()`](codex/codex-cli/src/utils/singlepass/context_files.ts) - File discovery and loading
+- **Context Limit**: [`context_limit.ts:printDirectorySizeBreakdown()`](codex/codex-cli/src/utils/singlepass/context_limit.ts) - Context usage visualization
+- **Conversation History**: [`conversation_history.rs:record_items()`](codex/codex-rs/core/src/conversation_history.rs) - History recording logic
+- **Token Usage**: [`chat_composer.rs:set_token_usage()`](codex/codex-rs/tui/src/chat_composer.rs) - Context window tracking 

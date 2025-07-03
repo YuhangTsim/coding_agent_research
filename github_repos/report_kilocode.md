@@ -322,20 +322,20 @@ export class Task extends EventEmitter<ClineEvents> {
 ## Implementation Locations
 
 ### Core Context Selection Files
-- **Context Management Settings**: `webview-ui/src/components/settings/ContextManagementSettings.tsx` - Context condensing configuration
-- **Context Condense Row**: `webview-ui/src/components/chat/ContextCondenseRow.tsx` - Context condensing UI
-- **Condense Module**: `src/core/condense/index.ts` - Context condensing logic
-- **Sliding Window**: `src/core/sliding-window/index.ts` - Context truncation and management
+- **Context Management Settings**: [`webview-ui/src/components/settings/ContextManagementSettings.tsx`](kilocode/webview-ui/src/components/settings/ContextManagementSettings.tsx) - Context condensing configuration
+- **Context Condense Row**: [`webview-ui/src/components/chat/ContextCondenseRow.tsx`](kilocode/webview-ui/src/components/chat/ContextCondenseRow.tsx) - Context condensing UI
+- **Condense Module**: [`src/core/condense/index.ts`](kilocode/src/core/condense/index.ts) - Context condensing logic
+- **Sliding Window**: [`src/core/sliding-window/index.ts`](kilocode/src/core/sliding-window/index.ts) - Context truncation and management
 
 ### Context Management Files
-- **Task**: `src/core/task/Task.ts` - Main task and context management
-- **Webview Message Handler**: `src/core/webview/webviewMessageHandler.ts` - Context state management
-- **Extension State Context**: `webview-ui/src/context/ExtensionStateContext.tsx` - Context state provider
-- **Responses**: `src/core/prompts/responses.ts` - Context-related response formatting
+- **Task**: [`src/core/task/Task.ts`](kilocode/src/core/task/Task.ts) - Main task and context management
+- **Webview Message Handler**: [`src/core/webview/webviewMessageHandler.ts`](kilocode/src/core/webview/webviewMessageHandler.ts) - Context state management
+- **Extension State Context**: [`webview-ui/src/context/ExtensionStateContext.tsx`](kilocode/webview-ui/src/context/ExtensionStateContext.tsx) - Context state provider
+- **Responses**: [`src/core/prompts/responses.ts`](kilocode/src/core/prompts/responses.ts) - Context-related response formatting
 
 ### Key Methods and Functions
-- **Context Condensing**: `Task.ts:condenseContext()` - Manual context condensing
-- **Truncation Logic**: `sliding-window/index.ts:truncateConversationIfNeeded()` - Context truncation
-- **Auto Condense**: `sliding-window/index.ts` - Automatic context condensing logic
-- **Context Settings**: `ContextManagementSettings.tsx` - Context configuration UI
-- **Message Handling**: `webviewMessageHandler.ts` - Context state updates 
+- **Context Condensing**: [`Task.ts:condenseContext()`](kilocode/src/core/task/Task.ts) - Manual context condensing
+- **Truncation Logic**: [`sliding-window/index.ts:truncateConversationIfNeeded()`](kilocode/src/core/sliding-window/index.ts) - Context truncation
+- **Auto Condense**: [`sliding-window/index.ts`](kilocode/src/core/sliding-window/index.ts) - Automatic context condensing logic
+- **Context Settings**: [`ContextManagementSettings.tsx`](kilocode/webview-ui/src/components/settings/ContextManagementSettings.tsx) - Context configuration UI
+- **Message Handling**: [`webviewMessageHandler.ts`](kilocode/src/core/webview/webviewMessageHandler.ts) - Context state updates 
