@@ -1,54 +1,107 @@
 # Aider Context Selection and Management Analysis
 
 ## Overview
-Aider is a command-line AI coding assistant that uses GPT models to help with code editing and development tasks. It employs sophisticated context selection and management strategies to work effectively with large codebases through its Repository Map system and graph-based ranking algorithms.
+Aider is a command-line AI coding assistant that employs a sophisticated graph-based context selection system. Its core innovation lies in treating codebases as dependency graphs and using PageRank algorithms to identify the most relevant code context for any given task.
 
 ## Context Selection Methodology
 
-### 1. Repository Map (RepoMap) System
-Aider's primary context selection mechanism is its **Repository Map** system, which provides intelligent code context without overwhelming the LLM's context window.
+### 1. Repository Map (RepoMap) System Architecture
+Aider's context selection is built around its **Repository Map** system, which creates a mathematical model of code relationships:
 
-**Key Components:**
-- **Tree-sitter Integration**: Uses tree-sitter to parse source code into Abstract Syntax Trees (AST) to identify functions, classes, variables, and other code symbols
-- **Symbol Extraction**: Extracts both definitions (`def`) and references (`ref`) from the codebase
-- **Graph-based Ranking**: Uses NetworkX to create a dependency graph where files are nodes and dependencies are edges
-
-### 2. Graph Ranking Algorithm
-Aider employs a sophisticated **PageRank-based algorithm** to determine the most relevant code context:
-
-**Algorithm Details:**
+**Core Implementation Pipeline:**
 ```python
-# Key factors in ranking:
-- Chat files get 50x multiplier (highest priority)
-- Mentioned identifiers get 10x multiplier
-- Snake_case, kebab-case, camelCase identifiers ≥8 chars get 10x multiplier
-- Private identifiers (starting with _) get 0.1x multiplier
-- Identifiers defined in >5 files get 0.1x multiplier
+# aider/repomap.py - Main context selection flow
+def get_repo_map(self, chat_files, other_files, mentioned_fnames, mentioned_idents):
+    1. Parse files with tree-sitter → Extract symbols (definitions + references)
+    2. Build dependency graph → Files as nodes, symbol references as edges
+    3. Apply PageRank algorithm → Rank nodes by importance
+    4. Select top-ranked tags → Within token budget constraints
+    5. Generate context map → Format for LLM consumption
 ```
 
-**Process:**
-1. Builds a MultiDiGraph with files as nodes
-2. Creates edges based on symbol references between files
-3. Applies PageRank algorithm with personalized weights
-4. Distributes rank across definition edges
-5. Selects top-ranked definitions within token budget
+**Tree-sitter Symbol Extraction:**
+- **Definitions**: Functions, classes, variables, methods (`def`, `class`, `function`)
+- **References**: Symbol usage, imports, calls (`identifier`, `call_expression`)
+- **Language Support**: 40+ languages via tree-sitter grammars
+- **Symbol Classification**: Distinguishes between definitions and references for accurate graph construction
 
-### 3. Context Optimization Strategy
-- **Token Budget Management**: Default 1k tokens for repo map, configurable via `--map-tokens`
-- **Dynamic Scaling**: When no files are in chat, expands map up to 8x normal size (`map_mul_no_files`)
-- **Binary Search**: Uses binary search to find optimal number of tags that fit within token budget
-- **Caching**: Implements caching system to avoid recomputing expensive operations
+### 2. PageRank-Based Context Ranking
+Aider's core innovation is applying Google's PageRank algorithm to code dependency graphs:
 
-### 4. File Selection Logic
-**Manual Selection:**
-- Users can manually add files to chat using `/add` command
-- Files can be removed using `/drop` command
-- GUI interface allows multi-select file addition
+**Mathematical Foundation:**
+```python
+# Personalized PageRank with weighted multipliers
+personalization_weights = {
+    'chat_files': 50.0,           # Files explicitly in conversation
+    'mentioned_identifiers': 10.0, # Symbols mentioned by user/LLM
+    'long_identifiers': 10.0,     # Identifiers ≥8 chars (likely important)
+    'private_identifiers': 0.1,   # Private symbols (less relevant)
+    'common_identifiers': 0.1,    # Symbols in >5 files (too generic)
+}
+```
 
-**Automatic Selection:**
-- **ContextCoder**: Specialized coder that identifies which files need editing for a given request
-- **File Mention Detection**: Automatically detects when LLM mentions files and offers to add them
-- **Identifier Matching**: Matches mentioned identifiers to potential files
+**Graph Construction Logic:**
+```python
+# aider/repomap.py:get_ranked_tags()
+1. Create MultiDiGraph G(files, symbol_references)
+2. Add personalization weights to nodes
+3. Run PageRank: rank = nx.pagerank(G, personalization=weights)
+4. Distribute rank to definition edges
+5. Sort definitions by rank, select within token budget
+```
+
+### 3. Token Budget Optimization
+Aider implements sophisticated token management to maximize context relevance within constraints:
+
+**Binary Search Algorithm:**
+```python
+# aider/repomap.py:get_repo_map()
+def optimize_tag_selection(self, ranked_tags, token_budget):
+    # Binary search for maximum tags within budget
+    left, right = 0, len(ranked_tags)
+    while left < right:
+        mid = (left + right + 1) // 2
+        if self.estimate_tokens(ranked_tags[:mid]) <= token_budget:
+            left = mid
+        else:
+            right = mid - 1
+    return ranked_tags[:left]
+```
+
+**Dynamic Context Scaling:**
+- **Base Budget**: 1k tokens (configurable via `--map-tokens`)
+- **No-Files Multiplier**: 8x expansion when no files in chat (`map_mul_no_files`)
+- **Error Tolerance**: 10% buffer for token estimation inaccuracies
+- **Cache Optimization**: Avoids recomputation of expensive PageRank calculations
+
+### 4. Multi-Level File Selection Logic
+Aider employs a hierarchical approach to file selection:
+
+**Level 1: Manual User Control**
+```python
+# aider/commands.py
+/add <files>     # Explicit file addition to chat context
+/drop <files>    # Remove files from chat context
+/ls              # List files in chat
+```
+
+**Level 2: Automatic LLM Detection**
+```python
+# aider/coders/base_coder.py:get_file_mentions()
+def detect_file_mentions(self, content):
+    # Regex patterns for file references
+    # Offers to add mentioned files to chat
+    # Tracks file mention confidence scores
+```
+
+**Level 3: Context-Aware Selection**
+```python
+# aider/coders/context_coder.py
+class ContextCoder:
+    # Specialized coder for identifying files needing edits
+    # Uses LLM to analyze request and suggest relevant files
+    # Integrates with repository map for context expansion
+```
 
 ## Context Management Methodology
 

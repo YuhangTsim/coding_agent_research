@@ -1,42 +1,136 @@
 # Continue Context Selection and Management Analysis
 
 ## Overview
-Continue is a comprehensive AI coding assistant that provides multiple modes of operation including Chat, Edit, Autocomplete, and Agent modes. It employs sophisticated context selection and management strategies that adapt based on the specific mode and user interaction patterns.
+Continue is a comprehensive AI coding assistant that implements AI-powered context selection through LLM reasoning and an extensive context provider ecosystem. Its core innovation lies in using language models to intelligently select relevant files and providing a modular context provider architecture for diverse context sources.
 
 ## Context Selection Methodology
 
-### 1. Multi-Modal Context Sources
-Continue gathers context from multiple sources depending on the interaction mode:
+### 1. AI-Powered Repository Map File Selection
+Continue's most sophisticated feature is its LLM-based file selection system that uses reasoning to identify relevant context:
 
-**Manual Context Sources:**
-- **@ Syntax**: Users can reference context providers using `@provider` syntax
-- **File Selection**: Direct file and folder selection through UI
-- **Code Highlighting**: Selected code snippets from editor
-- **Context Providers**: Extensive library of 30+ context providers
+**LLM Reasoning Implementation:**
+```typescript
+// core/context/retrieval/repoMapRequest.ts
+async function requestFilesFromRepoMap(
+    repoMap: string,
+    input: string,
+    llm: ILLM
+): Promise<string[]> {
+    const prompt = `${repoMap}
 
-**Automatic Context Sources:**
-- **Repository Map**: AI-powered file selection based on repository structure
-- **Recent Files**: Recently opened and edited files
-- **LSP Data**: Language server protocol data for symbols and definitions
-- **Semantic Search**: Vector-based search for relevant code
+Given the above repo map, your task is to decide which files are most likely to be relevant in answering a question. Before giving your answer, you should write your reasoning about which files/folders are most important. This thinking should start with a <reasoning> tag, followed by a paragraph explaining your reasoning, and then a closing </reasoning> tag on the last line.
 
-### 2. Context Provider System
-Continue implements an extensive context provider ecosystem:
+After this, your response should begin with a <results> tag, followed by a list of each file, one per line, and then a closing </results> tag on the last line. You should select between 5 and 10 files.
 
-**Built-in Providers:**
-- **File/Folder**: Direct file and directory inclusion
-- **Code**: Current file and highlighted code sections
-- **Git**: Commit history, issues, merge requests
-- **Terminal**: Terminal output and command history
-- **Database**: SQL schema and query results
-- **Web**: URL content and search results
-- **Documentation**: Project docs and external documentation
+This is the question that you should select relevant files for: "${input}"`;
 
-**Mode-Specific Context:**
-- **Chat Mode**: Flexible context selection with user guidance
-- **Edit Mode**: Full file contents with highlighted ranges
-- **Autocomplete Mode**: Automatic context based on cursor position
-- **Agent Mode**: Tool-based context gathering with conversation history
+    const response = await llm.complete(prompt);
+    return parseFileSelectionResponse(response);
+}
+```
+
+**Repository Map Generation:**
+```typescript
+// Intelligent repository structure analysis
+class RepoMapGenerator {
+    async generateMap(workspaceDir: string): Promise<string> {
+        // 1. Scan directory structure → Build file tree
+        const fileTree = await this.buildFileTree(workspaceDir);
+
+        // 2. Extract signatures → Parse function/class definitions
+        const signatures = await this.extractSignatures(fileTree);
+
+        // 3. Apply token budget → Limit to 50% of context window
+        const optimizedMap = this.optimizeForTokenBudget(signatures);
+
+        // 4. Format for LLM → Structure for reasoning
+        return this.formatForLLM(optimizedMap);
+    }
+}
+```
+
+### 2. Context Provider Ecosystem Architecture
+Continue implements a modular context provider system supporting 30+ different context sources:
+
+**Provider Interface Implementation:**
+```typescript
+// core/context/index.ts
+interface IContextProvider {
+    get description(): ContextProviderDescription;
+    getContextItems(
+        query: string,
+        extras: ContextProviderExtras
+    ): Promise<ContextItem[]>;
+}
+
+// Example provider implementations
+const contextProviders = {
+    'file': new FileContextProvider(),
+    'folder': new FolderContextProvider(),
+    'code': new CodeContextProvider(),
+    'git': new GitContextProvider(),
+    'terminal': new TerminalContextProvider(),
+    'database': new DatabaseContextProvider(),
+    'web': new WebContextProvider(),
+    // ... 23 more providers
+};
+```
+
+### 3. Intelligent Context Selection Algorithms
+Continue implements sophisticated algorithms for different interaction modes:
+
+**Mode-Specific Context Selection:**
+```typescript
+// Different algorithms for different interaction modes
+class ContextSelector {
+    async selectForChatMode(query: string): Promise<ContextItem[]> {
+        // 1. Parse @ mentions → Direct provider invocation
+        const mentionedProviders = this.parseAtMentions(query);
+
+        // 2. Repository map analysis → AI-powered file selection
+        const repoMapFiles = await this.getRepoMapFiles(query);
+
+        // 3. Recent context → Recently accessed files
+        const recentContext = this.getRecentContext();
+
+        // 4. Combine and rank → Merge all context sources
+        return this.rankAndCombineContext([
+            ...mentionedProviders,
+            ...repoMapFiles,
+            ...recentContext
+        ]);
+    }
+
+    async selectForEditMode(filePath: string, range: Range): Promise<ContextItem[]> {
+        // 1. Full file content → Complete file for editing
+        const fileContent = await this.getFileContent(filePath);
+
+        // 2. Related files → Dependencies and imports
+        const relatedFiles = await this.findRelatedFiles(filePath);
+
+        // 3. Symbol definitions → LSP-based symbol lookup
+        const symbolContext = await this.getSymbolContext(filePath, range);
+
+        return [fileContent, ...relatedFiles, ...symbolContext];
+    }
+
+    async selectForAutocompleteMode(
+        filePath: string,
+        position: Position
+    ): Promise<ContextItem[]> {
+        // 1. Current file context → Surrounding code
+        const localContext = this.getLocalContext(filePath, position);
+
+        // 2. Import analysis → Follow import statements
+        const importContext = await this.analyzeImports(filePath);
+
+        // 3. Symbol resolution → Type definitions and usage
+        const symbolContext = await this.resolveSymbols(filePath, position);
+
+        return [localContext, ...importContext, ...symbolContext];
+    }
+}
+```
 
 ### 3. Repository Map File Selection
 Continue implements an advanced AI-powered file selection system:

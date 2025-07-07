@@ -1,46 +1,201 @@
 # Kilocode Context Selection and Management Analysis
 
 ## Overview
-Kilocode is a VSCode extension that provides AI-powered coding assistance with sophisticated context management capabilities. It employs intelligent context condensing, configurable context limits, and profile-based threshold management to optimize token usage while maintaining conversation quality.
+Kilocode is a VSCode extension that implements an advanced AI-powered context condensing system with intelligent sliding window management. Its core innovation lies in using LLM-based conversation summarization to maintain long-term context while optimizing token usage through configurable threshold-based condensing.
 
 ## Context Selection Methodology
 
-### 1. Multi-Source Context Gathering
-Kilocode gathers context from multiple sources to provide comprehensive project understanding:
+### 1. Intelligent Context Condensing Architecture
+Kilocode's primary innovation is its AI-powered context condensing system that maintains conversation continuity:
 
-**Manual Context Sources:**
-- **File Mentions**: Users can mention files using @ syntax in task and feedback tags
-- **Code Selection**: Selected code snippets from editor
-- **URL Content**: Web content fetching for documentation and references
-- **Terminal Output**: Terminal content when requested
-
-**Automatic Context Sources:**
-- **Open Tabs**: Content from currently open editor tabs (configurable limit)
-- **Workspace Files**: Files from workspace (configurable limit)
-- **Active File**: Currently active file content
-- **File Context Tracking**: Tracks file edits and reads for context validation
-
-### 2. Context Mention Processing
-Kilocode implements sophisticated mention processing for context gathering:
-
-**Mention Processing Logic:**
+**Context Condensing Implementation:**
 ```typescript
-// Processes mentions in user content within task and feedback tags
-export async function processUserContentMentions({
-  userContent,
-  cwd,
-  urlContentFetcher,
-  fileContextTracker,
-  rooIgnoreController,
-  showRooIgnoredFiles = true,
-})
+// src/core/condense/index.ts
+async function summarizeConversation(
+    messages: ApiMessage[],
+    apiHandler: ApiHandler,
+    systemPrompt: string,
+    taskId: string,
+    prevContextTokens: number,
+    isAutomaticTrigger?: boolean,
+    customCondensingPrompt?: string,
+    condensingApiHandler?: ApiHandler
+): Promise<SummarizeResponse> {
+
+    // 1. Prepare conversation for summarization
+    const messagesToSummarize = messages.slice(0, -N_MESSAGES_TO_KEEP);
+    const messagesToKeep = messages.slice(-N_MESSAGES_TO_KEEP);
+
+    // 2. Use custom or default condensing prompt
+    const condensingPrompt = customCondensingPrompt || SUMMARY_PROMPT;
+    const activeApiHandler = condensingApiHandler || apiHandler;
+
+    // 3. Generate structured summary
+    const summaryResponse = await activeApiHandler.complete([
+        { role: 'system', content: condensingPrompt },
+        ...messagesToSummarize.map(msg => ({
+            role: msg.role,
+            content: msg.content
+        }))
+    ]);
+
+    // 4. Create condensed message structure
+    const summaryMessage: ApiMessage = {
+        role: 'assistant',
+        content: summaryResponse.content,
+        type: 'summary',
+        timestamp: Date.now()
+    };
+
+    // 5. Validate context size reduction
+    const newMessages = [messages[0], summaryMessage, ...messagesToKeep];
+    const newContextTokens = await estimateTokenCount(newMessages, activeApiHandler);
+
+    // 6. Ensure context actually shrunk
+    if (newContextTokens >= prevContextTokens) {
+        return {
+            messages: messages, // Return original if condensing failed
+            summary: '',
+            cost: summaryResponse.cost,
+            error: 'Context condensing failed to reduce size'
+        };
+    }
+
+    return {
+        messages: newMessages,
+        summary: summaryResponse.content,
+        cost: summaryResponse.cost,
+        newContextTokens
+    };
+}
 ```
 
-**Context Tag Detection:**
-- **Task Tags**: Processes mentions within `<task>` tags
-- **Feedback Tags**: Processes mentions within `<feedback>` tags
-- **Answer Tags**: Processes mentions within `<answer>` tags
-- **Multi-Block Support**: Handles mentions across different content block types
+### 2. Sliding Window Context Management
+Kilocode implements a sophisticated sliding window system with threshold-based optimization:
+
+**Sliding Window Implementation:**
+```typescript
+// src/core/sliding-window/index.ts
+async function truncateConversationIfNeeded({
+    messages,
+    totalTokens,
+    contextWindow,
+    maxTokens,
+    apiHandler,
+    autoCondenseContext,
+    autoCondenseContextPercent,
+    systemPrompt,
+    taskId,
+    customCondensingPrompt,
+    condensingApiHandler,
+    profileThresholds,
+    currentProfileId
+}: TruncateOptions): Promise<TruncateResponse> {
+
+    // 1. Calculate effective threshold
+    const profileThreshold = profileThresholds[currentProfileId];
+    const effectiveThreshold = profileThreshold || autoCondenseContextPercent;
+    const thresholdTokens = Math.floor(contextWindow * (effectiveThreshold / 100));
+
+    // 2. Check if truncation is needed
+    const availableTokens = contextWindow - (maxTokens || 0);
+    const bufferTokens = Math.floor(availableTokens * TOKEN_BUFFER_PERCENTAGE);
+
+    if (totalTokens <= (availableTokens - bufferTokens)) {
+        return { messages, summary: '', cost: 0, prevContextTokens: totalTokens };
+    }
+
+    // 3. Apply condensing strategy
+    if (autoCondenseContext && totalTokens >= thresholdTokens) {
+        // Use AI-powered summarization
+        return await summarizeConversation(
+            messages,
+            apiHandler,
+            systemPrompt,
+            taskId,
+            totalTokens,
+            true, // isAutomaticTrigger
+            customCondensingPrompt,
+            condensingApiHandler
+        );
+    } else {
+        // Use sliding window truncation
+        const fracToRemove = calculateRemovalFraction(totalTokens, availableTokens);
+        const truncatedMessages = truncateConversation(messages, fracToRemove, taskId);
+
+        return {
+            messages: truncatedMessages,
+            summary: '',
+            cost: 0,
+            prevContextTokens: totalTokens
+        };
+    }
+}
+```
+
+**Context Mention Processing:**
+```typescript
+// src/core/mentions/processUserContentMentions.ts
+async function processUserContentMentions({
+    userContent,
+    cwd,
+    urlContentFetcher,
+    fileContextTracker,
+    rooIgnoreController,
+    showRooIgnoredFiles = true
+}): Promise<Anthropic.Messages.ContentBlockParam[]> {
+
+    return Promise.all(
+        userContent.map(async (block) => {
+            const shouldProcessMentions = (text: string) =>
+                text.includes('<task>') ||
+                text.includes('<feedback>') ||
+                text.includes('<answer>');
+
+            if (block.type === 'text' && shouldProcessMentions(block.text)) {
+                return {
+                    ...block,
+                    text: await parseMentions(
+                        block.text,
+                        cwd,
+                        urlContentFetcher,
+                        fileContextTracker,
+                        rooIgnoreController,
+                        showRooIgnoredFiles
+                    )
+                };
+            }
+
+            // Handle tool_result blocks with nested content
+            if (block.type === 'tool_result' && Array.isArray(block.content)) {
+                const parsedContent = await Promise.all(
+                    block.content.map(async (contentBlock) => {
+                        if (contentBlock.type === 'text' &&
+                            shouldProcessMentions(contentBlock.text)) {
+                            return {
+                                ...contentBlock,
+                                text: await parseMentions(
+                                    contentBlock.text,
+                                    cwd,
+                                    urlContentFetcher,
+                                    fileContextTracker,
+                                    rooIgnoreController,
+                                    showRooIgnoredFiles
+                                )
+                            };
+                        }
+                        return contentBlock;
+                    })
+                );
+
+                return { ...block, content: parsedContent };
+            }
+
+            return block;
+        })
+    );
+}
+```
 
 ### 3. Context Condensing System
 Kilocode's most distinctive feature is its **Intelligent Context Condensing** system:

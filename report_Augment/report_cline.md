@@ -1,47 +1,106 @@
 # Cline Context Selection and Management Analysis
 
 ## Overview
-Cline is a VSCode extension that provides AI-powered coding assistance with sophisticated context selection and management strategies. It employs proactive context gathering, intelligent truncation, and multi-modal context sources to work effectively with large codebases while managing token limitations.
+Cline is a VSCode extension that implements a proactive context gathering system with intelligent optimization strategies. Its core innovation lies in automatically identifying and reading relevant files while employing sophisticated truncation algorithms to manage context window constraints.
 
 ## Context Selection Methodology
 
-### 1. Proactive Context Gathering
-Cline's primary strength is its **proactive approach** to context gathering, actively seeking to understand project context rather than waiting for explicit user input.
+### 1. Proactive Context Discovery Engine
+Cline's context selection is built around an intelligent discovery system that actively seeks relevant context:
 
-**Key Components:**
-- **Automatic File Reading**: Proactively reads related files when needed using read_tool
-- **Pattern Recognition**: Identifies related files based on imports and dependencies
-- **Contextual Exploration**: Explores project structure to understand relationships
-- **Intelligent Questioning**: Asks clarifying questions to gather missing context
+**Core Discovery Algorithm:**
+```typescript
+// src/core/task/ToolExecutor.ts - Proactive context gathering
+async function gatherProjectContext(task: string, workspace: string) {
+    1. Analyze task requirements → Identify potential file patterns
+    2. Scan workspace structure → Build file relationship map
+    3. Read related files proactively → Use read_tool for content gathering
+    4. Track file dependencies → Monitor imports and references
+    5. Validate context relevance → Score files by task alignment
+}
+```
 
-### 2. Multi-Modal Context Sources
-Cline supports various ways to provide and gather context:
+**Pattern Recognition System:**
+- **Import Analysis**: Follows import statements to discover dependencies
+- **File Naming Patterns**: Identifies related files by naming conventions
+- **Directory Structure**: Understands project organization patterns
+- **Language-Specific Logic**: Tailored discovery for different programming languages
 
-**Manual Context Sources:**
-- **File Mentions**: Users can mention files in conversation
-- **Code Selections**: Selected code snippets from editor
-- **File Attachments**: Direct file uploads and attachments
-- **Explicit Instructions**: User-provided context and guidance
+### 2. Multi-Modal Context Integration
+Cline implements a comprehensive context gathering system across multiple input modalities:
 
-**Automatic Context Sources:**
-- **Project Context**: Workspace structure and organization understanding
-- **Git Information**: Repository metadata and remote URLs
-- **File System Watchers**: Real-time tracking of file changes
-- **Ignore Patterns**: `.clineignore` file for excluding irrelevant files
+**Input Source Hierarchy:**
+```typescript
+// Context priority and processing order
+interface ContextSource {
+    priority: number;
+    type: 'manual' | 'automatic' | 'derived';
+    processor: ContextProcessor;
+}
 
-### 3. Context Selection Strategies
+const contextSources = [
+    { priority: 1, type: 'manual', source: 'user_file_mentions' },
+    { priority: 2, type: 'manual', source: 'code_selections' },
+    { priority: 3, type: 'automatic', source: 'workspace_files' },
+    { priority: 4, type: 'derived', source: 'dependency_analysis' },
+];
+```
 
-**Smart Context Management:**
-- **Duplicate Detection**: Removes duplicate file reads to save context space
-- **Context Condensation**: Summarizes conversation history when needed
-- **Relevance Scoring**: Prioritizes more relevant context over less relevant
-- **Dynamic Loading**: Loads context on-demand rather than all at once
+**Automatic Context Discovery:**
+- **Workspace Scanning**: Intelligent file discovery based on project structure
+- **Git Integration**: Repository metadata and change tracking
+- **Real-time Monitoring**: File system watchers for live context updates
+- **Ignore Pattern Processing**: `.clineignore` and `.gitignore` respect
 
-**File Context Tracking:**
-- **Edit Tracking**: Tracks files edited by Cline vs user
-- **Read Tracking**: Monitors file read operations
-- **Timestamp Management**: Maintains edit timestamps for context validation
-- **State Persistence**: Saves context state across sessions
+### 3. Intelligent Context Optimization
+Cline implements sophisticated algorithms to maximize context relevance while minimizing token usage:
+
+**Duplicate Detection Algorithm:**
+```typescript
+// src/core/context/context-management/ContextManager.ts
+function removeDuplicateFileReads(messages: ContextMessage[]): OptimizationResult {
+    const fileContentMap = new Map<string, string>();
+    const duplicateIndices: number[] = [];
+
+    messages.forEach((msg, index) => {
+        if (msg.type === 'file_read') {
+            const key = `${msg.filepath}:${msg.contentHash}`;
+            if (fileContentMap.has(key)) {
+                duplicateIndices.push(index);
+                // Replace with reference: "File content already shown above"
+            } else {
+                fileContentMap.set(key, msg.content);
+            }
+        }
+    });
+
+    return {
+        optimizedMessages: messages.filter((_, i) => !duplicateIndices.includes(i)),
+        charactersSaved: calculateSavings(duplicateIndices),
+        optimizationApplied: charactersSaved >= OPTIMIZATION_THRESHOLD
+    };
+}
+```
+
+**Context Relevance Scoring:**
+```typescript
+// Dynamic relevance calculation
+interface ContextRelevanceScore {
+    recency: number;        // How recently was file accessed
+    editFrequency: number;  // How often is file modified
+    taskAlignment: number;  // Relevance to current task
+    dependencyWeight: number; // Importance in dependency graph
+}
+
+function calculateRelevanceScore(file: FileContext, task: TaskContext): number {
+    return (
+        file.recency * 0.3 +
+        file.editFrequency * 0.2 +
+        file.taskAlignment * 0.4 +
+        file.dependencyWeight * 0.1
+    );
+}
+```
 
 ## Context Management Methodology
 

@@ -1,51 +1,157 @@
 # Gemini-CLI Context Selection and Management Analysis
 
 ## Overview
-Gemini-CLI is a command-line AI coding assistant that provides sophisticated context management through hierarchical instructional context files and intelligent file filtering. It employs a unique approach to context selection that combines user-defined instructional context with automated file discovery and filtering.
+Gemini-CLI is a command-line AI coding assistant that implements a hierarchical instructional context system with sophisticated file discovery and filtering. Its core innovation lies in user-controlled context management through structured context files and intelligent git-aware file filtering.
 
 ## Context Selection Methodology
 
-### 1. Hierarchical Instructional Context System
-Gemini-CLI's primary context selection mechanism is its **Hierarchical Instructional Context** system, which loads context files (default: `GEMINI.md`) from multiple locations:
+### 1. Hierarchical Context Discovery Algorithm
+Gemini-CLI's context selection is built around a sophisticated hierarchical discovery system:
 
-**Context File Loading Hierarchy:**
+**Context File Discovery Implementation:**
 ```typescript
-// Loading order from most general to most specific:
-1. Global Context File: ~/.gemini/<contextFileName>
-2. Project Root & Ancestors: Current directory up to project root or home
-3. Sub-directory Context Files: Below current directory (respecting ignore patterns)
-```
+// packages/core/src/utils/memoryDiscovery.ts
+async function loadHierarchicalGeminiMemory(
+    cwd: string,
+    debugMode: boolean,
+    fileService: FileDiscoveryService,
+    extensionContextFilePaths: string[] = []
+): Promise<MemoryResult> {
+    const contextFiles: GeminiFileContent[] = [];
+    const geminiMdFilenames = getAllGeminiMdFilenames();
 
-**Context File Configuration:**
-- **Configurable Filename**: Default `GEMINI.md`, can be customized via `contextFileName` setting
-- **Multiple Files Support**: Can accept array of filenames for different context types
-- **Hierarchical Precedence**: More specific files override or supplement general ones
-- **Concatenation**: All found context files are concatenated with separators indicating origin
+    // 1. Global context loading
+    const globalPath = path.join(homedir(), GEMINI_CONFIG_DIR);
+    for (const filename of geminiMdFilenames) {
+        const globalFile = path.join(globalPath, filename);
+        if (await fileExists(globalFile)) {
+            contextFiles.push({
+                filePath: globalFile,
+                content: await fs.readFile(globalFile, 'utf-8'),
+                scope: 'global'
+            });
+        }
+    }
 
-### 2. File Context Selection
+    // 2. Ancestor context discovery (bottom-up)
+    const projectRoot = await findProjectRoot(cwd);
+    let currentDir = path.resolve(cwd);
 
-**File Discovery and Filtering:**
-```typescript
-// Git-aware file filtering with configurable options
-interface FileFilteringOptions {
-  respectGitIgnore?: boolean;        // Default: true
-  respectGeminiIgnore?: boolean;     // Default: true
+    while (currentDir !== projectRoot && currentDir !== path.dirname(currentDir)) {
+        for (const filename of geminiMdFilenames) {
+            const contextFile = path.join(currentDir, filename);
+            if (await fileExists(contextFile)) {
+                contextFiles.push({
+                    filePath: contextFile,
+                    content: await fs.readFile(contextFile, 'utf-8'),
+                    scope: 'ancestor'
+                });
+            }
+        }
+        currentDir = path.dirname(currentDir);
+    }
+
+    // 3. Descendant context discovery (top-down with filtering)
+    const descendantFiles = await bfsFileSearch(
+        cwd,
+        geminiMdFilenames,
+        fileService,
+        MAX_DIRECTORIES_TO_SCAN_FOR_MEMORY
+    );
+
+    return {
+        contextFiles: contextFiles.concat(descendantFiles),
+        totalFiles: contextFiles.length,
+        hierarchyMap: buildHierarchyMap(contextFiles)
+    };
 }
 ```
 
-**File Filtering Strategy:**
-- **Git Ignore Integration**: Respects `.gitignore` patterns by default
-- **Custom Ignore Files**: Supports `.geminiignore` for project-specific exclusions
-- **Recursive Search**: Configurable recursive file search for @ commands
-- **Default Exclusions**: Built-in patterns for common build artifacts and binaries
+### 2. Advanced File Discovery and Filtering System
+Gemini-CLI implements a sophisticated git-aware file filtering system:
 
-**File Discovery Service:**
+**Git-Aware File Discovery Implementation:**
 ```typescript
+// packages/core/src/services/fileDiscoveryService.ts
 class FileDiscoveryService {
-  private gitIgnoreFilter: GitIgnoreFilter | null = null;
-  private geminiIgnoreFilter: GitIgnoreFilter | null = null;
-  
-  filterFiles(filePaths: string[], options: FilterFilesOptions): string[]
+    private gitIgnoreFilter: GitIgnoreFilter | null = null;
+    private geminiIgnoreFilter: GitIgnoreFilter | null = null;
+    private projectRoot: string;
+
+    constructor(projectRoot: string) {
+        this.projectRoot = path.resolve(projectRoot);
+
+        // Initialize git ignore filtering
+        if (isGitRepository(this.projectRoot)) {
+            const parser = new GitIgnoreParser(this.projectRoot);
+            try {
+                parser.loadGitRepoPatterns(); // Load .gitignore + .git/info/exclude
+                this.gitIgnoreFilter = parser;
+            } catch (error) {
+                // Graceful degradation if git patterns can't be loaded
+            }
+        }
+
+        // Initialize custom ignore filtering
+        const geminiParser = new GitIgnoreParser(this.projectRoot);
+        try {
+            geminiParser.loadPatterns('.geminiignore');
+            this.geminiIgnoreFilter = geminiParser;
+        } catch (error) {
+            // Graceful degradation if .geminiignore doesn't exist
+        }
+    }
+
+    filterFiles(filePaths: string[], options: FilterFilesOptions = {}): string[] {
+        const { respectGitIgnore = true, respectGeminiIgnore = true } = options;
+
+        return filePaths.filter(filePath => {
+            // Apply git ignore filtering
+            if (respectGitIgnore && this.shouldGitIgnoreFile(filePath)) {
+                return false;
+            }
+
+            // Apply custom gemini ignore filtering
+            if (respectGeminiIgnore && this.shouldGeminiIgnoreFile(filePath)) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+}
+```
+
+**Git Ignore Pattern Processing:**
+```typescript
+// packages/core/src/utils/gitIgnoreParser.ts
+class GitIgnoreParser implements GitIgnoreFilter {
+    private patterns: string[] = [];
+    private compiledPatterns: RegExp[] = [];
+
+    loadGitRepoPatterns(): void {
+        // 1. Load .gitignore patterns
+        const gitignorePath = path.join(this.projectRoot, '.gitignore');
+        if (fs.existsSync(gitignorePath)) {
+            const content = fs.readFileSync(gitignorePath, 'utf-8');
+            this.patterns.push(...this.parsePatterns(content));
+        }
+
+        // 2. Load .git/info/exclude patterns
+        const excludePath = path.join(this.projectRoot, '.git', 'info', 'exclude');
+        if (fs.existsSync(excludePath)) {
+            const content = fs.readFileSync(excludePath, 'utf-8');
+            this.patterns.push(...this.parsePatterns(content));
+        }
+
+        // 3. Always ignore .git directory
+        this.patterns.push('.git/**');
+
+        // 4. Compile patterns to RegExp for efficient matching
+        this.compiledPatterns = this.patterns.map(pattern =>
+            this.compileGitIgnorePattern(pattern)
+        );
+    }
 }
 ```
 

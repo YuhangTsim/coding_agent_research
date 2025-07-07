@@ -7,47 +7,94 @@ This report analyzes the context selection and management methodologies of six l
 
 ## Context Selection Strategies Overview
 
-### 1. **Aider: Graph-Based PageRank Selection**
-**Core Approach:** Sophisticated graph-based ranking using PageRank algorithm
-- **Repository Map System**: Uses tree-sitter to parse code into AST and creates dependency graphs
-- **PageRank Algorithm**: Ranks files based on symbol references with weighted multipliers
-- **Key Innovation**: Chat files get 50x multiplier, mentioned identifiers get 10x multiplier
-- **Token Budget**: Default 1k tokens for repo map, expandable to 8x when no files in chat
+### 1. **Aider: Mathematical Graph-Based Selection**
+**Core Implementation:** PageRank algorithm applied to code dependency graphs
+```python
+# Core algorithm: aider/repomap.py
+def get_ranked_tags(self, chat_files, mentioned_idents):
+    1. Parse files with tree-sitter → Extract symbols (definitions + references)
+    2. Build MultiDiGraph → Files as nodes, symbol references as edges
+    3. Apply PageRank with personalization weights:
+       - Chat files: 50x multiplier
+       - Mentioned identifiers: 10x multiplier
+       - Long identifiers (≥8 chars): 10x multiplier
+       - Private identifiers: 0.1x multiplier
+    4. Binary search optimization → Find max tags within token budget
+    5. Dynamic scaling → 8x expansion when no files in chat
+```
+**Key Innovation**: Mathematical precision through graph theory and personalized PageRank
 
-### 2. **Cline: Proactive Context Gathering**
-**Core Approach:** Proactive context gathering with intelligent optimization
-- **Automatic File Reading**: Proactively reads related files using read_tool
-- **Pattern Recognition**: Identifies related files based on imports and dependencies
-- **Duplicate Detection**: Removes duplicate file reads to save context space
-- **Key Innovation**: 30% character savings threshold determines truncation vs optimization
+### 2. **Cline: Proactive Discovery Engine**
+**Core Implementation:** Intelligent context discovery with optimization algorithms
+```typescript
+// Core algorithm: src/core/task/ToolExecutor.ts
+async function gatherProjectContext(task: string, workspace: string) {
+    1. Analyze task requirements → Identify file patterns
+    2. Proactive file reading → Follow imports and dependencies
+    3. Duplicate detection → Remove redundant content (30% threshold)
+    4. Relevance scoring → Weight by recency, edit frequency, task alignment
+    5. Context optimization → Apply truncation or optimization based on savings
+}
+```
+**Key Innovation**: Proactive automation with intelligent optimization thresholds
 
-### 3. **Codex: Dual-Mode Context Strategy**
-**Core Approach:** Dual-mode operation with character-based limits
-- **Full Context Mode**: Loads all files in project (2M character limit)
-- **Agentic Mode**: Tool-based context gathering on-demand
-- **File Tag Expansion**: @filename syntax for explicit file inclusion
-- **Key Innovation**: LRU caching with modification detection for performance
+### 3. **Codex: Dual-Mode Architecture**
+**Core Implementation:** Flexible context loading with advanced caching
+```typescript
+// Core algorithm: codex-cli/src/utils/singlepass/context_files.ts
+class FileDiscoveryEngine {
+    async loadFullContext(rootPath: string): Promise<ContextResult> {
+        1. Recursive file discovery → Apply ignore patterns
+        2. LRU cache optimization → Check mtime/size for changes
+        3. Parallel content loading → Concurrent file operations
+        4. Character limit enforcement → 2M character constraint
+        5. File tag expansion → @filename syntax processing
+    }
+}
+```
+**Key Innovation**: Dual-mode flexibility with sophisticated LRU caching system
 
-### 4. **Continue: AI-Powered File Selection**
-**Core Approach:** LLM reasoning for intelligent file selection
-- **Repository Map AI**: Uses Claude/GPT to reason about relevant files
-- **Context Provider Ecosystem**: 30+ built-in context providers
-- **Multi-Modal Support**: Text, images, files, and tool outputs
-- **Key Innovation**: LLM generates reasoning before selecting 5-10 relevant files
+### 4. **Continue: AI-Powered Reasoning**
+**Core Implementation:** LLM-based file selection with reasoning
+```typescript
+// Core algorithm: core/context/retrieval/repoMapRequest.ts
+async function requestFilesFromRepoMap(repoMap: string, input: string, llm: ILLM) {
+    1. Generate repository map → Extract signatures within token budget
+    2. LLM reasoning prompt → "Given the repo map, decide which files are relevant"
+    3. Structured response parsing → Extract <reasoning> and <results> tags
+    4. File validation → Verify selected files exist and are accessible
+    5. Context provider integration → 30+ modular context sources
+}
+```
+**Key Innovation**: LLM reasoning for semantic understanding of file relevance
 
-### 5. **Gemini-CLI: Hierarchical Instructional Context**
-**Core Approach:** User-defined hierarchical context files
-- **Context File Hierarchy**: Global → Project → Local GEMINI.md files
-- **Git-Aware Filtering**: Respects .gitignore and .geminiignore patterns
-- **Tool-Based Gathering**: read_many_files, list_directory, grep tools
-- **Key Innovation**: Hierarchical precedence with manual context file management
+### 5. **Gemini-CLI: Hierarchical Discovery**
+**Core Implementation:** User-controlled hierarchical context system
+```typescript
+// Core algorithm: packages/core/src/utils/memoryDiscovery.ts
+async function loadHierarchicalGeminiMemory(cwd: string): Promise<MemoryResult> {
+    1. Global context loading → ~/.gemini/<contextFileName>
+    2. Ancestor discovery → Bottom-up search to project root
+    3. Descendant discovery → Top-down with ignore pattern filtering
+    4. Git-aware filtering → Respect .gitignore and .geminiignore
+    5. Hierarchical precedence → More specific contexts override general
+}
+```
+**Key Innovation**: User-controlled hierarchical context with git-aware filtering
 
-### 6. **Kilocode: AI-Powered Context Condensing**
-**Core Approach:** Intelligent context condensing with structured summaries
-- **Sliding Window Management**: Configurable threshold-based condensing (10-100%)
-- **AI Summarization**: LLM creates structured conversation summaries
-- **Profile-Based Thresholds**: Different settings per API configuration
-- **Key Innovation**: Ensures context doesn't grow during condensing operations
+### 6. **Kilocode: AI-Powered Condensing**
+**Core Implementation:** Intelligent conversation summarization
+```typescript
+// Core algorithm: src/core/condense/index.ts
+async function summarizeConversation(messages: ApiMessage[]): Promise<SummarizeResponse> {
+    1. Threshold calculation → Profile-based percentage (10-100%)
+    2. Message preparation → Keep last N messages, summarize rest
+    3. Structured summarization → AI generates detailed technical summary
+    4. Context validation → Ensure condensing actually reduces size
+    5. Sliding window fallback → Traditional truncation if condensing fails
+}
+```
+**Key Innovation**: AI-powered conversation summarization with size validation
 
 ## Context Management Methodologies
 
@@ -74,54 +121,82 @@ This report analyzes the context selection and management methodologies of six l
 - **Codex**: Conversation history with Rust-based persistence
 - **Gemini-CLI**: Context files persist as regular files in filesystem
 
-## Key Innovations and Differentiators
+## Key Innovations and Technical Differentiators
 
-### 1. **Aider's Graph-Based Ranking**
-- **Innovation**: Treats codebase as a graph with PageRank algorithm
-- **Advantage**: Mathematically sound relevance scoring
-- **Use Case**: Large codebases where symbol relationships matter
+### 1. **Aider's Mathematical Precision**
+- **Core Algorithm**: Personalized PageRank on code dependency graphs
+- **Technical Innovation**: Binary search optimization for token budget management
+- **Implementation Strength**: Tree-sitter integration with multi-language AST parsing
+- **Optimization**: Dynamic context scaling (8x expansion) and intelligent caching
+- **Best For**: Large codebases requiring mathematically sound relevance scoring
 
-### 2. **Cline's Proactive Approach**
-- **Innovation**: Actively seeks context rather than waiting for user input
-- **Advantage**: Reduces user burden for context management
-- **Use Case**: Interactive development with frequent context changes
+### 2. **Cline's Intelligent Automation**
+- **Core Algorithm**: Proactive context discovery with pattern recognition
+- **Technical Innovation**: 30% character savings threshold for optimization decisions
+- **Implementation Strength**: Duplicate detection with relevance scoring algorithms
+- **Optimization**: Real-time context validation and file change tracking
+- **Best For**: Interactive development requiring minimal user context management
 
-### 3. **Codex's Dual-Mode Strategy**
-- **Innovation**: Switches between full context and agentic modes
-- **Advantage**: Flexibility for different project sizes and use cases
-- **Use Case**: Both small projects (full context) and large projects (agentic)
+### 3. **Codex's Architectural Flexibility**
+- **Core Algorithm**: Dual-mode context loading with LRU caching
+- **Technical Innovation**: Modification detection using mtime/size validation
+- **Implementation Strength**: Parallel file processing with concurrency limits
+- **Optimization**: Character-based limits (2M) with visual feedback systems
+- **Best For**: Projects requiring both comprehensive and selective context modes
 
-### 4. **Continue's AI-Powered Selection**
-- **Innovation**: Uses LLM reasoning to select relevant files
-- **Advantage**: Semantic understanding of relevance
-- **Use Case**: Complex projects where simple heuristics fail
+### 4. **Continue's Semantic Intelligence**
+- **Core Algorithm**: LLM reasoning with structured prompt engineering
+- **Technical Innovation**: Repository map generation with signature extraction
+- **Implementation Strength**: Modular context provider ecosystem (30+ providers)
+- **Optimization**: Mode-specific context selection (Chat/Edit/Autocomplete)
+- **Best For**: Complex projects requiring semantic understanding of file relationships
 
-### 5. **Gemini-CLI's Hierarchical Context**
-- **Innovation**: User-controlled hierarchical context file system
-- **Advantage**: Explicit user control and project-specific context
-- **Use Case**: Teams with established context documentation practices
+### 5. **Gemini-CLI's User Control**
+- **Core Algorithm**: Hierarchical context discovery with git-aware filtering
+- **Technical Innovation**: Pattern compilation and efficient ignore file processing
+- **Implementation Strength**: Graceful degradation and cross-platform compatibility
+- **Optimization**: Breadth-first search with configurable directory limits
+- **Best For**: Teams requiring explicit context control and documentation standards
 
-### 6. **Kilocode's Context Condensing**
-- **Innovation**: AI-powered conversation summarization with structure
-- **Advantage**: Maintains long conversation history without token bloat
-- **Use Case**: Extended development sessions with complex requirements
+### 6. **Kilocode's Conversation Intelligence**
+- **Core Algorithm**: AI-powered summarization with context size validation
+- **Technical Innovation**: Profile-based threshold management with automatic triggering
+- **Implementation Strength**: Structured summary generation with technical detail preservation
+- **Optimization**: Sliding window fallback and cost tracking for condensing operations
+- **Best For**: Extended development sessions requiring long-term context continuity
 
-## Comparative Analysis
+## Technical Implementation Comparison
 
-### Context Selection Sophistication
-1. **Most Sophisticated**: Continue (AI reasoning) → Aider (PageRank) → Cline (proactive)
-2. **Most User Control**: Gemini-CLI → Codex → Aider
-3. **Most Automated**: Cline → Continue → Kilocode
+### Algorithm Sophistication
+1. **Mathematical Rigor**: Aider (PageRank) → Continue (LLM reasoning) → Kilocode (AI summarization)
+2. **Implementation Complexity**: Continue (multi-modal) → Cline (optimization) → Codex (dual-mode)
+3. **Performance Engineering**: Codex (LRU caching) → Aider (binary search) → Gemini-CLI (filtering)
 
-### Context Management Efficiency
-1. **Best Token Optimization**: Kilocode (condensing) → Cline (optimization) → Aider (ranking)
-2. **Best Performance**: Codex (caching) → Aider (cache) → Gemini-CLI (filtering)
-3. **Best Persistence**: Continue (Redux) → Cline (metadata) → Kilocode (tasks)
+### Context Selection Intelligence
+```
+Aider:     Graph Theory + PageRank → Mathematical precision
+Continue:  LLM Reasoning + Providers → Semantic understanding
+Cline:     Pattern Recognition + Optimization → Proactive automation
+Kilocode:  AI Summarization + Thresholds → Conversation intelligence
+Codex:     Dual-Mode + Caching → Architectural flexibility
+Gemini-CLI: Hierarchical + Git-aware → User-controlled precision
+```
 
-### User Experience
-1. **Easiest to Use**: Cline (proactive) → Continue (providers) → Kilocode (auto-condensing)
-2. **Most Configurable**: Gemini-CLI → Kilocode → Continue
-3. **Best for Large Projects**: Aider → Continue → Codex
+### Technical Architecture Strengths
+| Tool | Core Strength | Implementation Highlight | Performance Optimization |
+|------|---------------|-------------------------|-------------------------|
+| **Aider** | Graph algorithms | Tree-sitter + NetworkX | Binary search + caching |
+| **Cline** | Proactive discovery | Pattern recognition engine | 30% optimization threshold |
+| **Codex** | Dual-mode flexibility | LRU cache with validation | Parallel file processing |
+| **Continue** | AI-powered reasoning | Modular provider system | Mode-specific optimization |
+| **Gemini-CLI** | Hierarchical control | Git-aware pattern matching | BFS with directory limits |
+| **Kilocode** | Conversation intelligence | Structured AI summarization | Profile-based thresholds |
+
+### Implementation Quality Metrics
+1. **Code Reusability**: Continue (providers) → Gemini-CLI (services) → Codex (modules)
+2. **Error Handling**: Gemini-CLI (graceful degradation) → Cline (validation) → Kilocode (fallbacks)
+3. **Extensibility**: Continue (plugin architecture) → Aider (coder system) → Gemini-CLI (tools)
+4. **Performance Monitoring**: Kilocode (telemetry) → Codex (metrics) → Aider (cache stats)
 
 ## Common Limitations Across Tools
 
@@ -172,28 +247,79 @@ This report analyzes the context selection and management methodologies of six l
 - Cline's automatic context gathering speeds development
 - Codex's full context mode provides complete project view
 
-## Future Directions
+## Future Directions and Technical Evolution
 
-### **Emerging Trends**
-1. **Hybrid Approaches**: Combining multiple strategies (AI reasoning + graph analysis)
-2. **Context Compression**: Advanced summarization and compression techniques
-3. **Semantic Understanding**: Better understanding of code semantics for relevance
-4. **Collaborative Context**: Shared context across team members and sessions
+### **Emerging Implementation Patterns**
+1. **Hybrid Algorithms**: Combining graph analysis (Aider) + LLM reasoning (Continue) + proactive discovery (Cline)
+2. **Advanced Caching**: Multi-level caching with semantic invalidation beyond simple mtime/size checks
+3. **Context Compression**: Neural compression techniques for maintaining semantic meaning in reduced space
+4. **Real-time Adaptation**: Dynamic algorithm selection based on project characteristics and user behavior
 
-### **Technical Improvements**
-1. **Better Token Estimation**: More accurate token counting across models
-2. **Incremental Updates**: Efficient context updates for file changes
-3. **Context Validation**: Automated validation of context relevance
-4. **Performance Optimization**: Faster context selection and management
+### **Next-Generation Technical Improvements**
+1. **Precision Token Counting**: Model-specific tokenizers with exact counting instead of estimation
+2. **Incremental Context Updates**: Differential context updates using file change deltas and dependency tracking
+3. **Semantic Context Validation**: AI-powered relevance scoring to validate context quality automatically
+4. **Performance Optimization**:
+   - Parallel context processing pipelines
+   - Predictive context pre-loading
+   - Memory-mapped file operations for large codebases
+   - GPU-accelerated similarity computations
 
-## Conclusion
+### **Advanced Context Management Techniques**
+```typescript
+// Future hybrid approach combining best practices
+class NextGenContextManager {
+    async selectContext(query: string, workspace: string): Promise<ContextPackage> {
+        // 1. Multi-algorithm fusion
+        const graphResults = await this.pageRankAnalysis(workspace);
+        const llmResults = await this.llmReasoning(query, workspace);
+        const proactiveResults = await this.proactiveDiscovery(query);
 
-Each tool represents a different philosophy for context management:
-- **Aider**: Mathematical precision through graph analysis
-- **Cline**: User experience through proactive automation
-- **Codex**: Flexibility through dual-mode operation
-- **Continue**: Intelligence through AI-powered selection
-- **Gemini-CLI**: Control through hierarchical user management
-- **Kilocode**: Efficiency through intelligent condensing
+        // 2. Intelligent fusion with confidence scoring
+        const fusedContext = this.fuseResults([
+            { source: 'graph', results: graphResults, confidence: 0.8 },
+            { source: 'llm', results: llmResults, confidence: 0.9 },
+            { source: 'proactive', results: proactiveResults, confidence: 0.7 }
+        ]);
 
-The choice between tools depends on specific use cases, team preferences, and project characteristics. The field continues to evolve rapidly, with hybrid approaches and improved AI capabilities promising even more sophisticated context management in the future.
+        // 3. Dynamic optimization based on context window and task type
+        return this.optimizeForContext(fusedContext, query);
+    }
+}
+```
+
+## Technical Conclusion and Implementation Insights
+
+Each tool represents a distinct technical approach to the fundamental challenge of context selection and management:
+
+### **Implementation Philosophies**
+- **Aider**: Mathematical rigor through graph theory and PageRank algorithms
+- **Cline**: Intelligent automation through proactive discovery and optimization thresholds
+- **Codex**: Architectural flexibility through dual-mode operation and advanced caching
+- **Continue**: Semantic intelligence through LLM reasoning and modular providers
+- **Gemini-CLI**: User empowerment through hierarchical control and git-aware filtering
+- **Kilocode**: Conversation intelligence through AI-powered summarization and validation
+
+### **Key Technical Learnings**
+
+1. **Algorithm Selection Matters**: The choice between graph-based (Aider), pattern-based (Cline), or AI-based (Continue) selection significantly impacts both accuracy and performance.
+
+2. **Caching is Critical**: All successful implementations employ sophisticated caching strategies, from Codex's LRU cache to Aider's PageRank result caching.
+
+3. **Optimization Thresholds Drive Behavior**: Whether it's Cline's 30% savings threshold or Kilocode's configurable condensing percentages, threshold-based decisions are crucial for user experience.
+
+4. **Validation Prevents Degradation**: Kilocode's context size validation and Cline's relevance scoring demonstrate the importance of validating optimization effectiveness.
+
+5. **User Control vs Automation**: The spectrum from Gemini-CLI's manual control to Cline's full automation shows different approaches to the user agency vs convenience trade-off.
+
+### **Implementation Recommendations**
+
+For developers building context management systems:
+
+1. **Start with Clear Algorithms**: Define precise algorithms like Aider's PageRank rather than heuristic approaches
+2. **Implement Robust Caching**: Use modification detection and intelligent invalidation strategies
+3. **Add Validation Layers**: Ensure optimizations actually improve the system (size reduction, relevance improvement)
+4. **Design for Extensibility**: Follow Continue's provider pattern or Gemini-CLI's tool-based architecture
+5. **Monitor Performance**: Implement telemetry and metrics like Kilocode's comprehensive tracking
+
+The field continues evolving toward hybrid approaches that combine the mathematical rigor of graph algorithms, the intelligence of LLM reasoning, and the efficiency of proactive automation. Future implementations will likely integrate multiple strategies with dynamic selection based on context characteristics and user preferences.

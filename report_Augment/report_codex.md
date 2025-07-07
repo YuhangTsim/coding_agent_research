@@ -1,47 +1,128 @@
 # Codex Context Selection and Management Analysis
 
 ## Overview
-Codex is an open-source AI coding assistant that provides both agentic and full-context modes for code editing and development tasks. It employs different context management strategies depending on the mode of operation, with sophisticated file handling and conversation history management.
+Codex is an open-source AI coding assistant that implements a dual-mode context strategy with sophisticated caching and file management systems. Its core innovation lies in providing both comprehensive full-context loading and efficient on-demand context gathering, optimized through LRU caching and intelligent file filtering.
 
 ## Context Selection Methodology
 
-### 1. Dual-Mode Context Strategy
-Codex operates in two distinct modes with different context selection approaches:
+### 1. Dual-Mode Architecture Implementation
+Codex's context selection operates through two distinct algorithmic approaches:
 
-**Full Context Mode (SinglePass):**
-- **Complete File Loading**: Loads all files in the project directory into context
-- **Character-Based Limits**: Uses a 2M character limit for context (`MAX_CONTEXT_CHARACTER_LIMIT = 2_000_000`)
-- **Directory Structure**: Provides ASCII directory structure overview
-- **File Filtering**: Uses ignore patterns to exclude irrelevant files
-
-**Agentic Mode:**
-- **Tool-Based Context**: Uses file reading tools to gather context on-demand
-- **Conversation History**: Maintains conversation context across interactions
-- **File Tag Expansion**: Supports `@filename` syntax for explicit file inclusion
-- **Dynamic Context**: Builds context incrementally through tool calls
-
-### 2. File Context Selection
-
-**File Discovery and Loading:**
+**Full Context Mode (SinglePass) Implementation:**
 ```typescript
-// Recursively collects all files under rootPath that are not ignored
-export async function getFileContents(
-  rootPath: string,
-  compiledPatterns: Array<RegExp>,
-): Promise<Array<FileContent>>
+// codex-cli/src/utils/singlepass/context_files.ts
+async function loadFullContext(rootPath: string): Promise<ContextResult> {
+    1. Discover all files → Apply ignore patterns recursively
+    2. Load file contents → Parallel reading with concurrency limits
+    3. Cache file metadata → Store mtime, size, content hash
+    4. Generate structure → ASCII tree representation
+    5. Validate size limits → Enforce 2M character constraint
+
+    return {
+        files: processedFiles,
+        totalSize: characterCount,
+        structure: directoryTree,
+        cacheHits: cacheStatistics
+    };
+}
 ```
 
-**File Filtering Strategy:**
-- **Default Ignore Patterns**: Comprehensive list of patterns for build artifacts, binaries, logs, etc.
-- **Custom Ignore Files**: Support for project-specific ignore patterns
-- **Symlink Handling**: Skips symbolic links to prevent infinite loops
-- **File Type Filtering**: Focuses on text-based source files
+**Agentic Mode Implementation:**
+```typescript
+// Dynamic context building through tool execution
+class AgenticContextBuilder {
+    private contextHistory: ConversationItem[] = [];
+    private fileTagExpander: FileTagExpander;
 
-**Caching System:**
-- **LRU Cache**: Implements Least Recently Used cache for file contents
-- **Modification Detection**: Uses file stats (mtime, size) to detect changes
-- **Cache Invalidation**: Removes files from cache when they no longer exist
-- **Performance Optimization**: Avoids re-reading unchanged files
+    async buildContext(userInput: string): Promise<ContextPackage> {
+        // 1. Parse @filename tags → Expand to file contents
+        const expandedInput = await this.fileTagExpander.process(userInput);
+
+        // 2. Analyze tool requirements → Determine needed context
+        const toolContext = await this.analyzeToolNeeds(expandedInput);
+
+        // 3. Gather incremental context → Use file reading tools
+        const dynamicContext = await this.gatherDynamicContext(toolContext);
+
+        return this.assembleContextPackage(expandedInput, dynamicContext);
+    }
+}
+```
+
+### 2. Advanced File Discovery and Caching System
+Codex implements a sophisticated file management system optimized for performance and accuracy:
+
+**Intelligent File Discovery Algorithm:**
+```typescript
+// codex-cli/src/utils/singlepass/context_files.ts
+class FileDiscoveryEngine {
+    private lruCache: LRUFileCache;
+    private ignorePatterns: CompiledPatterns;
+
+    async discoverFiles(rootPath: string): Promise<FileContent[]> {
+        const discoveredFiles: string[] = [];
+
+        // 1. Recursive directory traversal with ignore pattern filtering
+        for await (const entry of this.walkDirectory(rootPath)) {
+            if (this.shouldIncludeFile(entry)) {
+                discoveredFiles.push(entry.path);
+            }
+        }
+
+        // 2. Parallel file content loading with cache optimization
+        return Promise.all(
+            discoveredFiles.map(path => this.loadFileWithCache(path))
+        );
+    }
+
+    private async loadFileWithCache(filePath: string): Promise<FileContent> {
+        const stats = await fs.stat(filePath);
+        const cacheKey = `${filePath}:${stats.mtime.getTime()}:${stats.size}`;
+
+        // Check LRU cache first
+        if (this.lruCache.has(cacheKey)) {
+            return this.lruCache.get(cacheKey);
+        }
+
+        // Load and cache file content
+        const content = await fs.readFile(filePath, 'utf-8');
+        const fileContent = { path: filePath, content, stats };
+        this.lruCache.set(cacheKey, fileContent);
+
+        return fileContent;
+    }
+}
+```
+
+**LRU Cache Implementation:**
+```typescript
+// Optimized caching with modification detection
+class LRUFileCache {
+    private cache: Map<string, CacheEntry>;
+    private maxSize: number;
+
+    interface CacheEntry {
+        content: string;
+        mtime: number;
+        size: number;
+        accessTime: number;
+    }
+
+    set(key: string, value: FileContent): void {
+        // Evict least recently used entries when at capacity
+        if (this.cache.size >= this.maxSize) {
+            this.evictLRU();
+        }
+
+        this.cache.set(key, {
+            content: value.content,
+            mtime: value.stats.mtime.getTime(),
+            size: value.stats.size,
+            accessTime: Date.now()
+        });
+    }
+}
+```
 
 ### 3. Context Optimization Features
 
