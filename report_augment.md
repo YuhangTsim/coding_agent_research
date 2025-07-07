@@ -1,9 +1,9 @@
 # Comprehensive Context Selection and Management Analysis
-## AI Coding Assistants: Aider, Cline, Codex, Continue, Gemini-CLI, and Kilocode
+## AI Coding Assistants: Aider, Cline, Codex, Continue, Gemini-CLI, Kilocode, Goose, OpenHands, and Roo-Code
 
 ### Executive Summary
 
-This report analyzes the context selection and management methodologies of six leading AI coding assistants. Each tool employs distinct strategies to handle the fundamental challenge of providing relevant code context within LLM token limitations while maintaining conversation quality and performance.
+This report analyzes the context selection and management methodologies of nine leading AI coding assistants. Each tool employs distinct strategies to handle the fundamental challenge of providing relevant code context within LLM token limitations while maintaining conversation quality and performance.
 
 ## Context Selection Strategies Overview
 
@@ -96,6 +96,51 @@ async function summarizeConversation(messages: ApiMessage[]): Promise<SummarizeR
 ```
 **Key Innovation**: AI-powered conversation summarization with size validation
 
+### 7. **Roo-Code: Enhanced AI Condensing with Task Management**
+**Core Implementation:** Advanced context condensing with task-based persistence
+```typescript
+// Core algorithm: src/core/condense/index.ts
+async function summarizeConversation(messages: ApiMessage[], taskId: string) {
+    1. Multi-modal context integration → File mentions, URLs, terminal output
+    2. Task-based context tracking → Real-time file watchers and metadata
+    3. Structured AI summarization → Custom prompts with technical detail preservation
+    4. Context validation → Size reduction verification with fallback strategies
+    5. Cross-session persistence → Task sharing and global configuration
+}
+```
+**Key Innovation**: Task-based context management with multi-modal integration
+
+### 8. **Goose: Dual-Strategy Context Management**
+**Core Implementation:** Rust-based truncation and summarization system
+```rust
+// Core algorithm: crates/goose/src/context_mgmt/
+impl Agent {
+    async fn manage_context(messages: &[Message]) -> Result<(Vec<Message>, Vec<usize>)> {
+        1. Conservative token estimation → 70% of model limit with overhead buffers
+        2. Strategy selection → Choose between truncation and summarization
+        3. Tool-aware processing → Preserve tool call/response pairs
+        4. Content-level truncation → Handle oversized individual messages
+        5. Graceful degradation → Multiple fallback strategies
+    }
+}
+```
+**Key Innovation**: Dual-strategy approach with tool-aware context preservation
+
+### 9. **OpenHands: Memory-Driven Event Architecture**
+**Core Implementation:** Event-driven memory system with microagent integration
+```python
+# Core algorithm: openhands/memory/memory.py
+class Memory:
+    def process_context(self, event_stream: EventStream) -> RecallObservation:
+        1. Event stream processing → Capture all interactions as events
+        2. Microagent knowledge → Trigger-based context retrieval
+        3. Workspace context → Repository, runtime, and instruction integration
+        4. Conversation memory → Event-to-message conversion with tool support
+        5. Pluggable condensation → Abstract condenser interface with strategies
+    }
+```
+**Key Innovation**: Event-driven architecture with microagent knowledge system
+
 ## Context Management Methodologies
 
 ### Token/Context Window Management
@@ -108,6 +153,9 @@ async function summarizeConversation(messages: ApiMessage[]): Promise<SummarizeR
 | **Continue** | Intelligent truncation | Model context window | Tool call integrity preservation |
 | **Gemini-CLI** | Model-aware limits | Model-specific | Hierarchical loading + filtering |
 | **Kilocode** | Threshold-based condensing | 10-100% configurable | AI-powered summarization |
+| **Roo-Code** | Enhanced AI condensing | Model-specific | Task-based persistence + validation |
+| **Goose** | Dual-strategy management | 70% of model limit | Conservative estimation + tool preservation |
+| **OpenHands** | Event-driven condensation | Pluggable strategies | Microagent knowledge + workspace context |
 
 ### Context Persistence and State Management
 
@@ -115,6 +163,12 @@ async function summarizeConversation(messages: ApiMessage[]): Promise<SummarizeR
 - **Cline**: Context updates with timestamps, nested mapping, metadata storage
 - **Continue**: Redux-based state with session management and tool call tracking
 - **Kilocode**: Task-based context with cross-session storage and checkpoints
+- **Roo-Code**: Enhanced task-based context with file watchers and metadata tracking
+- **OpenHands**: Event-driven state with memory component and microagent integration
+
+**Advanced Context Systems:**
+- **Goose**: Rust-based dual-strategy system with tool-aware processing
+- **OpenHands**: Memory-driven architecture with pluggable condensation strategies
 
 **Simple File-Based Persistence:**
 - **Aider**: Cache system with SQLite for tag storage
@@ -165,20 +219,44 @@ async function summarizeConversation(messages: ApiMessage[]): Promise<SummarizeR
 - **Optimization**: Sliding window fallback and cost tracking for condensing operations
 - **Best For**: Extended development sessions requiring long-term context continuity
 
+### 7. **Roo-Code's Enhanced Task Management**
+- **Core Algorithm**: Advanced AI condensing with task-based persistence
+- **Technical Innovation**: Multi-modal context integration with file watchers
+- **Implementation Strength**: Real-time context tracking with metadata storage
+- **Optimization**: Cross-session task sharing and global configuration management
+- **Best For**: Collaborative development with persistent task context
+
+### 8. **Goose's Dual-Strategy Architecture**
+- **Core Algorithm**: Rust-based truncation and summarization system
+- **Technical Innovation**: Conservative token estimation with tool-aware processing
+- **Implementation Strength**: Content-level truncation with graceful degradation
+- **Optimization**: 70% safety factor with overhead buffer management
+- **Best For**: Production environments requiring robust context management
+
+### 9. **OpenHands' Memory-Driven Intelligence**
+- **Core Algorithm**: Event-driven memory system with microagent integration
+- **Technical Innovation**: Trigger-based knowledge retrieval with workspace context
+- **Implementation Strength**: Pluggable condensation strategies with multi-modal support
+- **Optimization**: Event stream processing with intelligent context injection
+- **Best For**: Complex multi-agent workflows requiring comprehensive context awareness
+
 ## Technical Implementation Comparison
 
 ### Algorithm Sophistication
-1. **Mathematical Rigor**: Aider (PageRank) → Continue (LLM reasoning) → Kilocode (AI summarization)
-2. **Implementation Complexity**: Continue (multi-modal) → Cline (optimization) → Codex (dual-mode)
-3. **Performance Engineering**: Codex (LRU caching) → Aider (binary search) → Gemini-CLI (filtering)
+1. **Mathematical Rigor**: Aider (PageRank) → Continue (LLM reasoning) → Goose (dual-strategy) → OpenHands (event-driven)
+2. **Implementation Complexity**: OpenHands (memory-driven) → Continue (multi-modal) → Roo-Code (task-based) → Cline (optimization)
+3. **Performance Engineering**: Goose (Rust-based) → Codex (LRU caching) → Aider (binary search) → Gemini-CLI (filtering)
 
 ### Context Selection Intelligence
 ```
-Aider:     Graph Theory + PageRank → Mathematical precision
-Continue:  LLM Reasoning + Providers → Semantic understanding
-Cline:     Pattern Recognition + Optimization → Proactive automation
-Kilocode:  AI Summarization + Thresholds → Conversation intelligence
-Codex:     Dual-Mode + Caching → Architectural flexibility
+Aider:      Graph Theory + PageRank → Mathematical precision
+Continue:   LLM Reasoning + Providers → Semantic understanding
+Cline:      Pattern Recognition + Optimization → Proactive automation
+Kilocode:   AI Summarization + Thresholds → Conversation intelligence
+Roo-Code:   Enhanced AI Condensing + Tasks → Multi-modal integration
+Goose:      Dual-Strategy + Tool-Aware → Robust context management
+OpenHands:  Event-Driven + Microagents → Memory-driven intelligence
+Codex:      Dual-Mode + Caching → Architectural flexibility
 Gemini-CLI: Hierarchical + Git-aware → User-controlled precision
 ```
 
@@ -191,12 +269,15 @@ Gemini-CLI: Hierarchical + Git-aware → User-controlled precision
 | **Continue** | AI-powered reasoning | Modular provider system | Mode-specific optimization |
 | **Gemini-CLI** | Hierarchical control | Git-aware pattern matching | BFS with directory limits |
 | **Kilocode** | Conversation intelligence | Structured AI summarization | Profile-based thresholds |
+| **Roo-Code** | Task-based management | Multi-modal integration | Real-time file watchers |
+| **Goose** | Dual-strategy robustness | Tool-aware processing | Conservative token estimation |
+| **OpenHands** | Memory-driven architecture | Event stream + microagents | Pluggable condensation |
 
 ### Implementation Quality Metrics
-1. **Code Reusability**: Continue (providers) → Gemini-CLI (services) → Codex (modules)
-2. **Error Handling**: Gemini-CLI (graceful degradation) → Cline (validation) → Kilocode (fallbacks)
-3. **Extensibility**: Continue (plugin architecture) → Aider (coder system) → Gemini-CLI (tools)
-4. **Performance Monitoring**: Kilocode (telemetry) → Codex (metrics) → Aider (cache stats)
+1. **Code Reusability**: OpenHands (event-driven) → Continue (providers) → Gemini-CLI (services) → Codex (modules)
+2. **Error Handling**: Goose (graceful degradation) → Gemini-CLI (graceful degradation) → Cline (validation) → Kilocode (fallbacks)
+3. **Extensibility**: OpenHands (microagents) → Continue (plugin architecture) → Aider (coder system) → Gemini-CLI (tools)
+4. **Performance Monitoring**: Roo-Code (task tracking) → Kilocode (telemetry) → Codex (metrics) → Aider (cache stats)
 
 ## Common Limitations Across Tools
 
@@ -223,24 +304,33 @@ Gemini-CLI: Hierarchical + Git-aware → User-controlled precision
 ## Recommendations by Use Case
 
 ### **Large Enterprise Codebases**
-**Recommended**: Aider or Continue
+**Recommended**: Aider, Continue, or OpenHands
 - Aider's PageRank handles complex dependencies well
 - Continue's AI reasoning scales with codebase complexity
+- OpenHands' memory-driven architecture supports multi-agent workflows
 
 ### **Interactive Development**
-**Recommended**: Cline or Kilocode
+**Recommended**: Cline, Kilocode, or Roo-Code
 - Cline's proactive gathering reduces friction
 - Kilocode's condensing maintains long conversations
+- Roo-Code's task-based management enhances collaboration
+
+### **Production Environments**
+**Recommended**: Goose or OpenHands
+- Goose's robust dual-strategy system with graceful degradation
+- OpenHands' event-driven architecture with comprehensive error handling
 
 ### **Team Collaboration**
-**Recommended**: Gemini-CLI or Continue
+**Recommended**: Gemini-CLI, Continue, or Roo-Code
 - Gemini-CLI's hierarchical context supports team standards
 - Continue's provider ecosystem enables shared context sources
+- Roo-Code's task sharing facilitates collaborative development
 
 ### **Resource-Constrained Environments**
-**Recommended**: Codex or Aider
+**Recommended**: Codex, Aider, or Goose
 - Codex's caching minimizes redundant operations
 - Aider's efficient ranking optimizes token usage
+- Goose's conservative estimation prevents context overflow
 
 ### **Rapid Prototyping**
 **Recommended**: Cline or Codex (full mode)
@@ -299,6 +389,9 @@ Each tool represents a distinct technical approach to the fundamental challenge 
 - **Continue**: Semantic intelligence through LLM reasoning and modular providers
 - **Gemini-CLI**: User empowerment through hierarchical control and git-aware filtering
 - **Kilocode**: Conversation intelligence through AI-powered summarization and validation
+- **Roo-Code**: Enhanced task management through multi-modal integration and persistence
+- **Goose**: Robust reliability through dual-strategy context management and tool awareness
+- **OpenHands**: Memory-driven intelligence through event architecture and microagent integration
 
 ### **Key Technical Learnings**
 
@@ -323,3 +416,72 @@ For developers building context management systems:
 5. **Monitor Performance**: Implement telemetry and metrics like Kilocode's comprehensive tracking
 
 The field continues evolving toward hybrid approaches that combine the mathematical rigor of graph algorithms, the intelligence of LLM reasoning, and the efficiency of proactive automation. Future implementations will likely integrate multiple strategies with dynamic selection based on context characteristics and user preferences.
+
+## New Tools Analysis Summary
+
+### **Roo-Code: Enhanced AI Condensing with Task Management**
+
+**Key Innovations:**
+- **Multi-Modal Context Integration**: Seamlessly handles file mentions, URLs, terminal output, and code selections
+- **Task-Based Persistence**: Real-time file watchers with metadata tracking across sessions
+- **Enhanced AI Condensing**: Structured summarization with custom prompts and validation
+- **Cross-Session Collaboration**: Task sharing and global configuration management
+
+**Technical Strengths:**
+- Advanced file context tracking with real-time monitoring
+- Intelligent context mention parsing (@file, @url, @terminal)
+- Task-based context persistence with metadata storage
+- Enhanced validation with fallback strategies
+
+**Best Use Cases**: Collaborative development environments requiring persistent task context and multi-modal integration
+
+### **Goose: Dual-Strategy Context Management**
+
+**Key Innovations:**
+- **Conservative Token Management**: 70% safety factor with overhead buffers for system prompts and tools
+- **Dual-Strategy Approach**: Intelligent selection between truncation and summarization
+- **Tool-Aware Processing**: Preserves tool call/response pairs during context operations
+- **Content-Level Truncation**: Handles oversized individual messages with graceful degradation
+
+**Technical Strengths:**
+- Rust-based implementation for performance and reliability
+- Sophisticated error handling with multiple fallback strategies
+- Model-agnostic design with automatic adaptation
+- MCP (Model Context Protocol) integration
+
+**Best Use Cases**: Production environments requiring robust, reliable context management with tool integration
+
+### **OpenHands: Memory-Driven Event Architecture**
+
+**Key Innovations:**
+- **Event-Driven Architecture**: All interactions captured as events in a comprehensive stream
+- **Microagent Knowledge System**: Trigger-based context retrieval from specialized agents
+- **Memory Component**: Dedicated system for information retrieval and workspace context
+- **Pluggable Condensation**: Abstract interface supporting multiple condensation strategies
+
+**Technical Strengths:**
+- Comprehensive event capture and processing pipeline
+- Multi-modal support (text, images, tools) with vision integration
+- Extensible microagent ecosystem for knowledge management
+- Sophisticated conversation memory with tool call support
+
+**Best Use Cases**: Complex multi-agent workflows requiring comprehensive context awareness and extensible knowledge systems
+
+### **Comparative Analysis of New Tools**
+
+| Aspect | Roo-Code | Goose | OpenHands |
+|--------|----------|-------|-----------|
+| **Architecture** | Task-based VSCode extension | Rust-based agent framework | Python multi-agent platform |
+| **Context Strategy** | Enhanced AI condensing | Dual-strategy management | Memory-driven events |
+| **Key Innovation** | Multi-modal task persistence | Tool-aware robustness | Microagent knowledge system |
+| **Performance** | Real-time file watching | Conservative token estimation | Event stream processing |
+| **Extensibility** | Global configuration | MCP integration | Pluggable condensers |
+| **Best For** | Collaborative development | Production reliability | Multi-agent workflows |
+
+These three tools represent the latest evolution in context management, each addressing different aspects of the challenge:
+
+- **Roo-Code** advances the AI condensing approach with enhanced task management and multi-modal integration
+- **Goose** provides production-ready robustness with dual-strategy context management and tool awareness
+- **OpenHands** introduces memory-driven architecture with comprehensive event processing and microagent integration
+
+Together with the existing tools, they demonstrate the field's progression toward more sophisticated, reliable, and extensible context management solutions.
